@@ -1,6 +1,6 @@
 const simpleOauthModule = require('simple-oauth2')
-const authMiddleWareInit = require('./auth.js')
-const callbackMiddleWareInit = require('./callback')
+const authMiddlewareInit = require('./auth.js')
+const callbackMiddlewareInit = require('./callback')
 const oauthProvider = process.env.OAUTH_PROVIDER || 'github'
 const loginAuthTarget = process.env.AUTH_TARGET || '_self'
 
@@ -19,16 +19,20 @@ const config = {
 
 const oauth2 = new simpleOauthModule.AuthorizationCode(config)
 
-function indexMiddleWare (req, res) {
+function indexMiddleware (req, res) {
   res.send(`Hello<br>
     <a href="/auth" target="${loginAuthTarget}">
       Log in with ${oauthProvider.toUpperCase()}
     </a>`)
 }
 
+function emptyMiddleware (req, res) {
+  res.send('')
+}
+
 module.exports = {
-  auth: authMiddleWareInit(oauth2),
-  callback: callbackMiddleWareInit(oauth2, oauthProvider),
-  success: (req, res) => { res.send('') },
-  index: indexMiddleWare
+  auth: authMiddlewareInit(oauth2),
+  callback: callbackMiddlewareInit(oauth2, oauthProvider),
+  success: emptyMiddleware,
+  index: process.env.NODE_ENV === 'production' ? emptyMiddleware : indexMiddleware,
 }
